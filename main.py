@@ -6,9 +6,7 @@ import json
 app = FastAPI()
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+from apis.v1.authenticate.authenticate import *
 
 
 if __name__ == "__main__":
