@@ -2,11 +2,19 @@ import unittest
 from fastapi.testclient import TestClient
 from main import app
 from data.response_constant import *
+from utils.database.database import SessionLocal
+from .user import User
 
 
 class AuthenticateTest(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
+
+    def tearDown(self) -> None:
+        db = SessionLocal()
+        db.query(User).delete()
+        db.commit()
+        db.close()
 
     def test_GetUserInfoWithoutToken_ThenReturnsUnauthorized(self):
         # Act
@@ -46,3 +54,10 @@ class AuthenticateTest(unittest.TestCase):
         self.assertEqual(user["username"], registeredUser["username"])
         self.assertTrue(user["id"], registeredUser["id"])
         self.assertTrue("password" not in user)
+
+    def test_WhenGetUserWithNonExistedId_ThenReturnsNotFound(self):
+        # Act
+        response = self.client.get("/users/not-found-id")
+
+        # Assert
+        self.assertEqual(response.status_code, HTTP_NOT_FOUND_404)

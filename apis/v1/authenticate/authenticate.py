@@ -1,7 +1,7 @@
 from main import app
 from fastapi.responses import JSONResponse
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from data.response_constant import *
 from .request_user_model import RegisterUser
@@ -16,23 +16,26 @@ async def get_user():
 
 
 @app.post("/register", response_model=UserInfo, status_code=HTTP_CREATED_201)
-async def register_user(
-    user_info: RegisterUser, db: AsyncSession = Depends(get_db)
-) -> UserInfo:
+def register_user(user_info: RegisterUser, db: Session = Depends(get_db)) -> UserInfo:
     returned_user = User(username=user_info.username)
 
     db.add(returned_user)
 
     try:
-        await db.commit()
-        await db.refresh(returned_user)
+        db.commit()
+        db.refresh(returned_user)
         return returned_user
     except Exception as e:
-        await db.rollback()
+        db.rollback()
         return JSONResponse(status_code=HTTP_BAD_REQUEST_400, content={"message": e})
 
 
 @app.get("/users/{user_id}", response_model=UserInfo, status_code=HTTP_OK_200)
-async def get_user(user_id: str) -> UserInfo:
-    returned_user = User(id=user_id, username="test-registered-user")
-    return returned_user
+def get_user(user_id: str, db: Session = Depends(get_db)) -> UserInfo:
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        return JSONResponse(
+            status_code=HTTP_NOT_FOUND_404, content={"message": "User not found"}
+        )
+    return user

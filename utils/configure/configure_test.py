@@ -1,5 +1,5 @@
 import unittest
-from utils.configure import Configure
+from utils.configure.configure import Configure
 import os
 import json
 
