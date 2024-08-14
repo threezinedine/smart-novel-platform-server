@@ -3,33 +3,25 @@ import uvicorn
 import argparse
 import json
 from utils.configure.configure import Configure
+import apis.v1.users.users as auth
+from fastapi import Depends
+from config import initialize_config, config
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--dev",
+    "-D",
+    action="store_true",
+    help="Run in development mode",
+)
+args = parser.parse_args()
 
 app = FastAPI()
 
-
-from apis.v1.authenticate.authenticate import *
-
+app.include_router(auth.router)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--dev",
-        "-D",
-        action="store_true",
-        help="Run in development mode",
-    )
-    args = parser.parse_args()
-
-    config = json.load(open("config.json"))
-    devConfig = json.load(open("config.development.json"))
-
-    config = Configure("config.json")
-    config.Load()
-
-    if args.dev:
-        overiddenConfig = Configure("config.development.json")
-        overiddenConfig.Load()
-        config.OverridenBy(overiddenConfig)
+    initialize_config(args.dev)
 
     uvicorn.run(
         app="main:app",

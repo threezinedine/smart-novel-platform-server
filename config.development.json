@@ -1,4 +1,5 @@
 {
     "host": "localhost",
-    "port": 8291
+    "port": 8291,
+    "expiresMininutes": 1
 }
