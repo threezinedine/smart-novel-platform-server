@@ -1,9 +1,9 @@
 import unittest
 from fastapi.testclient import TestClient
 from .token_models import Role
-from main import app
+from test import app
 from data.response_constant import *
-from utils.database.database import SessionLocal
+from utils.database.t_database import TessingSessionLocal as SessionLocal
 from .user_model import User
 from .routes import *
 

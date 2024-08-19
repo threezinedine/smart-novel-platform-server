@@ -1,7 +1,7 @@
 import unittest
-from main import app
+from test import app
 from fastapi.testclient import TestClient
-from utils.database.database import SessionLocal
+from utils.database.t_database import TessingSessionLocal as SessionLocal
 from .user_model import User
 from .routes import *
 from data.response_constant import *
