@@ -2,7 +2,7 @@ from typing import Optional, Union
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 import jwt
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from .user_model import User
 from fastapi import Depends, HTTPException
 from data.response_constant import *
@@ -42,9 +42,9 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None]):
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.now() + expires_delta
+        expire = datetime.now(tz=timezone.utc) + expires_delta
     else:
-        expire = datetime.now() + timedelta(minutes=15)
+        expire = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -61,6 +61,14 @@ async def get_current_user(
                 status_code=HTTP_UNAUTHORIZED_401,
                 detail="Token does not contain username",
             )
+
+        expire_time = payload.get("exp")
+        if expire_time is None:
+            raise HTTPException(
+                status_code=HTTP_UNAUTHORIZED_401,
+                detail="Token does not contain expire time",
+            )
+
     except Exception as e:
         raise HTTPException(status_code=HTTP_UNAUTHORIZED_401, detail=f"Error: {e}")
     user = get_user(db, username)

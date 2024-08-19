@@ -1,4 +1,10 @@
 from pydantic import BaseModel
+from enum import Enum
+
+
+class Role(str, Enum):
+    admin = "admin"
+    user = "user"
 
 
 class Token(BaseModel):
@@ -8,3 +14,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str = None
+    role: Role = Role.user

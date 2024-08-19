@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 from utils.database.database import Base
+from .token_models import Role
 
 
 class User(Base):
@@ -7,4 +8,5 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, unique=True, index=True)
+    role = Column(String, default=Role.user.value)
     hashed_password = Column(String)

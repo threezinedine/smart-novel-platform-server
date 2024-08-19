@@ -1,5 +1,6 @@
 import unittest
 from fastapi.testclient import TestClient
+from .token_models import Role
 from main import app
 from data.response_constant import *
 from utils.database.database import SessionLocal
@@ -88,8 +89,10 @@ class AuthenticateTest(unittest.TestCase):
             headers=self._GetAuthorizationHeader(token=token["access_token"]),
         )
 
+        data = res.json()
         self.assertEqual(res.status_code, HTTP_OK_200)
-        self.assertEqual(res.json()["username"], self.testUserJson["username"])
+        self.assertEqual(data["username"], self.testUserJson["username"])
+        self.assertEqual(data["role"], Role.user)
 
     def test_WhenLoginWithInvalidPassword_ThenReturnsUnauthorized(self):
         # Act
@@ -126,3 +129,20 @@ class AuthenticateTest(unittest.TestCase):
 
         # Assert
         self.assertEqual(response.status_code, HTTP_UNAUTHORIZED_401)
+
+    def test_WhenQueryTheInfoWithExpiredToken_ThenReturnsUnauthorized(self):
+        # Arrange
+        expires_token = self.client.post(
+            EXPIRES_TOKEN_ROUTE,
+            json=self.testUserJson,
+        ).json()["access_token"]
+
+        # Act
+        response = self.client.get(
+            USER_INFO_ROUTE,
+            headers=self._GetAuthorizationHeader(token=expires_token),
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, HTTP_UNAUTHORIZED_401)
+        self.assertTrue("Signature has expired" in response.json()["detail"])

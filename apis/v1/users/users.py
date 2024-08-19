@@ -7,7 +7,7 @@ from .user_info_model import UserInfo
 from .user_model import User
 from utils.database.database import get_db
 from .token_handler import *
-from .token_models import Token
+from .token_models import Token, TokenData
 from fastapi import APIRouter
 from .routes import *
 from config import get_config
@@ -21,7 +21,7 @@ router = APIRouter(
 
 @router.get(
     USER_INFO_ROUTE,
-    response_model=UserInfo,
+    response_model=TokenData,
     status_code=HTTP_OK_200,
 )
 def get_user(
@@ -110,8 +110,24 @@ def login(
 
     access_token_expires = timedelta(minutes=config.Get("expiresMinutes", 15))
     access_token = create_access_token(
-        data={"username": user.username},
+        data={"username": user.username, "role": user.role},
         expires_delta=access_token_expires,
+    )
+
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+    )
+
+
+@router.post(
+    EXPIRES_TOKEN_ROUTE,
+    response_model=Token,
+    status_code=HTTP_OK_200,
+)
+def get_expires_token(userInfo: RegisterUser):
+    access_token = create_access_token(
+        data={"username": userInfo.username}, expires_delta=timedelta(minutes=-1)
     )
 
     return Token(
