@@ -1,12 +1,5 @@
-from fastapi import FastAPI
-import uvicorn
 import argparse
-import json
-from utils.configure.configure import Configure
-import apis.v1.users.users as auth
-from fastapi import Depends
 from config import initialize_config, config
-from fastapi.middleware.cors import CORSMiddleware
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -17,6 +10,12 @@ parser.add_argument(
 )
 args = parser.parse_args()
 initialize_config(args.dev)
+
+from fastapi import FastAPI
+import uvicorn
+import apis.v1.users.users as auth
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 

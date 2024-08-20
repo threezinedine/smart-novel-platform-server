@@ -43,6 +43,7 @@ class ConfigureTest(unittest.TestCase):
         self.assertEqual(self.validConfigure["host"], self.testConfigData["host"])
         self.assertEqual(self.validConfigure["port"], self.testConfigData["port"])
         self.assertIsNone(self.validConfigure["non-existed-key"])
+        self.assertFalse(self.validConfigure.IsOverriden())
 
     def test_GivenConfigure_WhenGetItem_ThenReturnTheValue(self):
         # Arrange
@@ -75,3 +76,4 @@ class ConfigureTest(unittest.TestCase):
             self.validConfigure["host"], self.testOverrideConfigData["host"]
         )
         self.assertEqual(self.validConfigure["port"], self.testConfigData["port"])
+        self.assertTrue(self.validConfigure.IsOverriden())

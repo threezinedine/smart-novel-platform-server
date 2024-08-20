@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from .routes import *
 from config import get_config
 from utils.configure.configure import Configure
+from .token_models import Role
 
 router = APIRouter(
     prefix=USER_ROUTE,
@@ -134,3 +135,39 @@ def get_expires_token(userInfo: RegisterUser):
         access_token=access_token,
         token_type="bearer",
     )
+
+
+@router.post(
+    REGISTER_ADMIN_ROUTE,
+    response_model=UserInfo,
+    status_code=HTTP_CREATED_201,
+)
+def register_admin_user(
+    userInfo: RegisterUser,
+    db: Session = Depends(get_db),
+    config: Configure = Depends(get_config),
+):
+    if not config.IsOverriden():
+        return JSONResponse(
+            status_code=HTTP_FORBIDDEN_403,
+            content={"message": "Cannot use this route in production mode"},
+        )
+
+    returned_user = User(
+        username=userInfo.username,
+        hashed_password=get_password_hash(userInfo.password),
+        role=Role.admin,
+    )
+
+    db.add(returned_user)
+
+    try:
+        db.commit()
+        db.refresh(returned_user)
+        return returned_user
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(
+            status_code=HTTP_BAD_REQUEST_400,
+            content={"message": e},
+        )

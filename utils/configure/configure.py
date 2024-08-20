@@ -32,5 +32,8 @@ class Configure:
     def OverridenBy(self, overrideConfigure: "Configure") -> None:
         self.__overridenConfigure = overrideConfigure
 
+    def IsOverriden(self) -> bool:
+        return self.__overridenConfigure is not None
+
     def __repr__(self) -> str:
         return f"<Configure data={json.dumps(self.__data)} />"
