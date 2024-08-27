@@ -7,6 +7,6 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String, unique=True, index=True)
-    role = Column(String, default=Role.user.value)
-    hashed_password = Column(String)
+    username = Column(String(100), unique=True, index=True)
+    role = Column(String(10), default=Role.user.value)
+    hashed_password = Column(String(255))

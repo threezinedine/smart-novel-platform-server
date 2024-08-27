@@ -1,0 +1,13 @@
+venv
+__pycache__
+.pytest_cache
+
+test.py
+*_test.py
+*.bat
+ex.config.json
+.git
+.gitignore
+README.md
+LICENSE
+*.db

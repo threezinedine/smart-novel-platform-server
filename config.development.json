@@ -1,5 +1,6 @@
 {
     "host": "localhost",
     "port": 8291,
-    "expiresMininutes": 1
+    "expiresMininutes": 1,
+    "dbURL": "sqlite:///./db.db"
 }

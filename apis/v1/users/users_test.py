@@ -46,8 +46,6 @@ class AuthenticateTest(unittest.TestCase):
         # Act
         response = self.client.get(f'{self.registeredUser["id"]}')
 
-        print(response.content)
-
         # Assert
         self.assertEqual(response.status_code, HTTP_OK_200)
         user = response.json()
