@@ -13,6 +13,7 @@ from .routes import *
 from config import get_config
 from utils.configure.configure import Configure
 from .token_models import Role
+from apis.v1.profile.profile_model import Profile
 
 router = APIRouter(
     prefix=USER_ROUTE,
@@ -53,7 +54,10 @@ def register_user(
         hashed_password=get_password_hash(user_info.password),
     )
 
+    profile = Profile(user=returned_user)
+
     db.add(returned_user)
+    db.add(profile)
 
     try:
         db.commit()

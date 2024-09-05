@@ -1,7 +1,8 @@
 import unittest
 from fastapi.testclient import TestClient
+from apis.v1.profile.profile_model import Profile
 from .token_models import Role
-from test import app
+from test_app import app
 from data.response_constant import *
 from utils.database.t_database import TessingSessionLocal as SessionLocal
 from .user_model import User
@@ -27,6 +28,7 @@ class AuthenticateTest(unittest.TestCase):
     @staticmethod
     def _ClearDatabase():
         db = SessionLocal()
+        db.query(Profile).delete()
         db.query(User).delete()
         db.commit()
         db.close()

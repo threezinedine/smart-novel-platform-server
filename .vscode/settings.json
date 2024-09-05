@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": true,
+    "prettier.configPath": ".vscode\\.prettierrc",
+    "prettier.jsxSingleQuote": true,
+    "prettier.semi": false,
+    "prettier.singleAttributePerLine": true,
+    "prettier.singleQuote": true,
+    "prettier.tabWidth": 4,
+    "prettier.useTabs": true,
+    "isort.args": ["--profile", "black"],
+    "python.testing.pytestEnabled": true
+}

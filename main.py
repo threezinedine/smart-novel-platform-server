@@ -43,8 +43,10 @@ app.add_middleware(
 # app.mount("/static", StaticFiles(directory="publics"), name="static")
 
 import apis.v1.users.users as auth
+import apis.v1.profile.profile as profile
 
 app.include_router(auth.router)
+app.include_router(profile.router)
 
 
 if __name__ == "__main__":
