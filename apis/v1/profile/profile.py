@@ -1,22 +1,21 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from utils.database.database import get_db
 from sqlalchemy.orm import Session
-from fastapi import Depends
-from apis.v1.users.token_handler import get_current_user
-from apis.v1.users.user_model import User
+from utils.authen.token_handler import get_current_user
+from models import *
 from data.response_constant import *
 
 from .profile_schemas import ProfileSchema
-from .profile_model import Profile
+from routes import *
 
 router = APIRouter(
-    prefix="/api/profiles",
+    prefix=PROFLIE_BASE_ROUTE,
     tags=["profile"],
 )
 
 
 @router.get(
-    "/",
+    GET_PROFILE_ROUTE,
     response_model=ProfileSchema,
     status_code=HTTP_OK_200,
 )
@@ -36,7 +35,7 @@ def read_profile(
 
 
 @router.put(
-    "/",
+    UPDATE_PROFILE_ROUTE,
     response_model=ProfileSchema,
     status_code=HTTP_OK_200,
 )
@@ -53,12 +52,7 @@ def update_profile(
             detail="Profile not found",
         )
 
-    profile.email = profileInfo.email
-    profile.first_name = profileInfo.first_name
-    profile.last_name = profileInfo.last_name
-    profile.phone = profileInfo.phone
-    profile.address = profileInfo.address
-    profile.avatar_url = profileInfo.avatar_url
+    profile.Update(profileInfo)
 
     try:
         db.commit()
@@ -73,7 +67,7 @@ def update_profile(
 
 
 @router.get(
-    "/validate-email",
+    VALIDATE_EMAIL_ROUTE,
     response_model=ProfileSchema,
     status_code=HTTP_OK_200,
 )
@@ -82,7 +76,8 @@ def validate_email(
     db: Session = Depends(get_db),
 ) -> ProfileSchema:
     profile = db.query(Profile).filter(Profile.user_id == user.id).first()
-    profile.email_verified = True
+
+    profile.VerifyEmail()
 
     try:
         db.commit()

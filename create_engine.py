@@ -30,8 +30,7 @@ if os.path.exists("test_database.db"):
     os.remove("test_database.db")
 
 from utils.database.database import Base, engine
-from apis.v1.users.user_model import User
-from apis.v1.profile.profile_model import Profile
+from models import *
 
 print("Creating tables main database...")
 Base.metadata.create_all(bind=engine)
@@ -43,7 +42,7 @@ Base.metadata.create_all(bind=engine)
 
 # create admin user
 from utils.database.database import SessionLocal
-from apis.v1.users.token_handler import get_password_hash
+from utils.authen.token_handler import get_password_hash
 
 db = SessionLocal()
 admin = User(

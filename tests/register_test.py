@@ -1,16 +1,16 @@
 import unittest
-from .token_models import Role
+from apis.v1.users.token_schema import Role
 from test_app import app
 from fastapi.testclient import TestClient
 from utils.database.t_database import TessingSessionLocal as SessionLocal
-from .user_model import User
-from .routes import *
+from models import User
+from routes import *
 from data.response_constant import *
 
 
 class RegisterTest(unittest.TestCase):
     def setUp(self):
-        self.client = TestClient(app, base_url=f"http://test{USER_ROUTE}")
+        self.client = TestClient(app, base_url=f"http://test{USER_BASE_ROUTE}")
         self.testUserJson = {"username": "test", "password": "test"}
 
     def _GetAuthorizationHeader(self, token: str):
@@ -46,7 +46,7 @@ class RegisterTest(unittest.TestCase):
         loginResponse = self.client.post(LOGIN_ROUTE, json=adminUser)
 
         adminInfo = self.client.get(
-            USER_INFO_ROUTE,
+            GET_USER_INFO_ROUTE,
             headers=self._GetAuthorizationHeader(
                 loginResponse.json()["access_token"],
             ),

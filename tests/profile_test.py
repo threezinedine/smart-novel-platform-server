@@ -3,23 +3,23 @@ from apis.v1.profile.profile_schemas import ProfileSchema
 from test_app import app
 from fastapi.testclient import TestClient
 from utils.database.t_database import TessingSessionLocal as SessionLocal
-from apis.v1.profile.profile_model import Profile
-from apis.v1.users.user_model import User
+from models import *
+from routes import *
 
 from data.response_constant import *
 
 
 class ProfileTest(unittest.TestCase):
     def setUp(self):
-        self.client = TestClient(app, base_url=f"http://test/api")
+        self.client = TestClient(app, base_url=f"http://test")
 
         self.client.post(
-            "/users/register",
+            f"{USER_BASE_ROUTE}{REGISTER_ROUTE}",
             json={"username": "test", "password": "test"},
         )
 
         self.token = self.client.post(
-            "/users/login",
+            f"{USER_BASE_ROUTE}{LOGIN_ROUTE}",
             json={"username": "test", "password": "test"},
         ).json()["access_token"]
 
@@ -55,7 +55,7 @@ class ProfileTest(unittest.TestCase):
 
     def test_GetClientProfile(self):
         # Act
-        response = self._Get("/profiles")
+        response = self._Get(f"{PROFLIE_BASE_ROUTE}{GET_PROFILE_ROUTE}")
         print(response)
 
         # Assert
@@ -86,7 +86,10 @@ class ProfileTest(unittest.TestCase):
         }
 
         # Act
-        response = self._Put("/profiles", json=newProfile)
+        response = self._Put(
+            f"{PROFLIE_BASE_ROUTE}{UPDATE_PROFILE_ROUTE}",
+            json=newProfile,
+        )
 
         # Assert
         self.assertEqual(response.status_code, HTTP_OK_200)
@@ -98,7 +101,7 @@ class ProfileTest(unittest.TestCase):
             ProfileSchema(**expectedProfile),
         )
 
-        profile = self._Get("/profiles").json()
+        profile = self._Get(f"{PROFLIE_BASE_ROUTE}{GET_PROFILE_ROUTE}").json()
         self._AssertProfileSchemaEqual(
             profile,
             ProfileSchema(**expectedProfile),
@@ -106,9 +109,9 @@ class ProfileTest(unittest.TestCase):
 
     def test_ValidateTheEmail(self):
         # Act
-        response = self._Get("/profiles/validate-email")
+        response = self._Get(f"{PROFLIE_BASE_ROUTE}{VALIDATE_EMAIL_ROUTE}")
 
         # Assert
         self.assertEqual(response.status_code, HTTP_OK_200)
-        profile = self._Get("/profiles").json()
+        profile = self._Get(f"{PROFLIE_BASE_ROUTE}{GET_PROFILE_ROUTE}").json()
         self.assertTrue(profile["email_verified"])

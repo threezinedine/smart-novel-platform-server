@@ -7,11 +7,11 @@ class Role(str, Enum):
     user = "user"
 
 
-class Token(BaseModel):
+class TokenSchema(BaseModel):
     access_token: str
     token_type: str
 
 
-class TokenData(BaseModel):
+class TokenDataSchema(BaseModel):
     username: str = None
     role: Role = Role.user

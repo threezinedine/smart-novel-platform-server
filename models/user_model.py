@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from utils.database.database import Base
-from .token_models import Role
+from apis.v1.users.token_schema import Role
 
 
 class User(Base):

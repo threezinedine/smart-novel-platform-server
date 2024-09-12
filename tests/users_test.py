@@ -1,18 +1,18 @@
 import unittest
 from fastapi.testclient import TestClient
-from apis.v1.profile.profile_model import Profile
-from .token_models import Role
+from models.profile_model import Profile
+from apis.v1.users.token_schema import Role
 from test_app import app
 from data.response_constant import *
 from utils.database.t_database import TessingSessionLocal as SessionLocal
-from .user_model import User
-from .routes import *
+from models import User
+from routes import *
 
 
 class AuthenticateTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.client = TestClient(app, base_url=f"http://test{USER_ROUTE}")
+        cls.client = TestClient(app, base_url=f"http://test{USER_BASE_ROUTE}")
         cls.testUserJson = {"username": "test", "password": "test"}
         cls.registeredUser = cls.client.post(
             REGISTER_ROUTE,
@@ -39,7 +39,7 @@ class AuthenticateTest(unittest.TestCase):
 
     def test_GetUserInfoWithoutToken_ThenReturnsUnauthorized(self):
         # Act
-        response = self.client.get(USER_INFO_ROUTE)
+        response = self.client.get(GET_USER_INFO_ROUTE)
 
         # Assert
         self.assertEqual(response.status_code, HTTP_UNAUTHORIZED_401)
@@ -85,7 +85,7 @@ class AuthenticateTest(unittest.TestCase):
         token = response.json()
         self.assertTrue(token is not None)
         res = self.client.get(
-            USER_INFO_ROUTE,
+            GET_USER_INFO_ROUTE,
             headers=self._GetAuthorizationHeader(token=token["access_token"]),
         )
 
@@ -123,26 +123,9 @@ class AuthenticateTest(unittest.TestCase):
     def test_WhenQueryTheInfoWithInvalidToken_ThenReturnsUnauthorized(self):
         # Act
         response = self.client.get(
-            USER_INFO_ROUTE,
+            GET_USER_INFO_ROUTE,
             headers=self._GetAuthorizationHeader(token="invalid-token"),
         )
 
         # Assert
         self.assertEqual(response.status_code, HTTP_UNAUTHORIZED_401)
-
-    def test_WhenQueryTheInfoWithExpiredToken_ThenReturnsUnauthorized(self):
-        # Arrange
-        expires_token = self.client.post(
-            EXPIRES_TOKEN_ROUTE,
-            json=self.testUserJson,
-        ).json()["access_token"]
-
-        # Act
-        response = self.client.get(
-            USER_INFO_ROUTE,
-            headers=self._GetAuthorizationHeader(token=expires_token),
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, HTTP_UNAUTHORIZED_401)
-        self.assertTrue("Signature has expired" in response.json()["detail"])

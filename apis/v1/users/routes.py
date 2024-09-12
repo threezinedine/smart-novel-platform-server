@@ -1,6 +1,0 @@
-REGISTER_ROUTE = "/register"
-REGISTER_ADMIN_ROUTE = "/register-admin"
-USER_INFO_ROUTE = "/user-info"
-LOGIN_ROUTE = "/login"
-USER_ROUTE = "/api/users"
-EXPIRES_TOKEN_ROUTE = "/expires-token"

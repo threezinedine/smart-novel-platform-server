@@ -1,9 +1,9 @@
+import jwt
 from typing import Optional, Union
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-import jwt
 from datetime import timedelta, datetime, timezone
-from .user_model import User
+from models import User
 from fastapi import Depends, HTTPException
 from data.response_constant import *
 from sqlalchemy.orm import Session
