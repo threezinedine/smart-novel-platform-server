@@ -1,6 +1,6 @@
 from .routes import *
 
-USER_BASE_ROUTE = f"{BASE}/users"
+USER_BASE_ROUTE = f"{BASE_ROUTE}/users"
 
 REGISTER_ROUTE = "/register"
 REGISTER_ADMIN_ROUTE = "/register-admin"

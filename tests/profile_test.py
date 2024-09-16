@@ -10,15 +10,16 @@ from data.response_constant import *
 
 
 class ProfileTest(unittest.TestCase):
-    def setUp(self):
-        self.client = TestClient(app, base_url=f"http://test")
+    @classmethod
+    def setUpClass(cls):
+        cls.client = TestClient(app, base_url=f"http://test")
 
-        self.client.post(
+        cls.client.post(
             f"{USER_BASE_ROUTE}{REGISTER_ROUTE}",
             json={"username": "test", "password": "test"},
         )
 
-        self.token = self.client.post(
+        cls.token = cls.client.post(
             f"{USER_BASE_ROUTE}{LOGIN_ROUTE}",
             json={"username": "test", "password": "test"},
         ).json()["access_token"]
@@ -37,7 +38,8 @@ class ProfileTest(unittest.TestCase):
             **kwargs,
         )
 
-    def tearDown(self) -> None:
+    @classmethod
+    def tearDownClass(self) -> None:
         db = SessionLocal()
         db.query(User).delete()
         db.query(Profile).delete()

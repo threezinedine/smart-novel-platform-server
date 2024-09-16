@@ -44,9 +44,11 @@ app.add_middleware(
 
 import apis.v1.users.users as auth
 import apis.v1.profile.profile as profile
+import apis.v1.todos.todos as todos
 
 app.include_router(auth.router)
 app.include_router(profile.router)
+app.include_router(todos.router)
 
 
 if __name__ == "__main__":

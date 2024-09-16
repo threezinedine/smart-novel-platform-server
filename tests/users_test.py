@@ -1,11 +1,10 @@
 import unittest
 from fastapi.testclient import TestClient
-from models.profile_model import Profile
+from models import *
 from apis.v1.users.token_schema import Role
 from test_app import app
 from data.response_constant import *
 from utils.database.t_database import TessingSessionLocal as SessionLocal
-from models import User
 from routes import *
 
 

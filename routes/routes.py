@@ -1,1 +1,1 @@
-BASE = "/api"
+BASE_ROUTE = "/api"
