@@ -5,11 +5,13 @@ from routes import *
 from models import *
 from utils.database.database import *
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 from utils.authen.token_handler import get_current_user
 from data.response_constant import *
 
 from .todo_schema import *
 from .planned_todo_schema import *
+from .todo_order_schema import *
 
 router = APIRouter(
     prefix=TODO_BASE_ROUTE,
@@ -372,3 +374,74 @@ def delete_todo(
     db.commit()
 
     return {"message": "Todo deleted successfully"}
+
+
+@router.delete(CLEAN_TODOS_BY_DATE_ROUTE)
+def clean_todos_by_date(
+    date: date,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    stmt = delete(Todo).where(Todo.date == date, Todo.user_id == user.id)
+
+    try:
+        db.execute(stmt)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=HTTP_INTERNAL_SERVER_ERROR_500,
+            detail=str(e),
+        )
+
+    return {}
+
+
+@router.get(GET_TODOS_ORDER_ROUTE_BY_DATE, response_model=TodoOrderSchema)
+def get_todo_orders(
+    date: date,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    todo_order = (
+        db.query(TodoOrder)
+        .filter(TodoOrder.date == date, TodoOrder.user_id == user.id)
+        .first()
+    )
+
+    if todo_order is None:
+        todos = db.query(Todo).filter(Todo.date == date, Todo.user_id == user.id).all()
+        return TodoOrderSchema(orders=[todo.id for todo in todos])
+    else:
+        return TodoOrderSchema(orders=[int(id) for id in todo_order.order.split(",")])
+
+
+@router.put(UPDATE_TODOS_ORDER_ROUTE, response_model=TodoOrderSchema)
+def update_todo_orders(
+    date: date,
+    orderSchema: TodoOrderSchema,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    todo_order = (
+        db.query(TodoOrder)
+        .filter(TodoOrder.date == date, TodoOrder.user_id == user.id)
+        .first()
+    )
+
+    if todo_order is None:
+        todo_order = TodoOrder.Create(user, date, orderSchema.orders)
+        db.add(todo_order)
+    else:
+        todo_order.Update(orderSchema.orders)
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=HTTP_INTERNAL_SERVER_ERROR_500,
+            detail=str(e),
+        )
+
+    return orderSchema

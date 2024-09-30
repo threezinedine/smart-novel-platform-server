@@ -103,6 +103,7 @@ class TodoTest(unittest.TestCase):
         db.query(Todo).delete()
         db.query(PlannedTodo).delete()
         db.query(PlannedTodoCreated).delete()
+        db.query(TodoOrder).delete()
         db.commit()
         db.close()
 
@@ -532,12 +533,12 @@ class TodoTest(unittest.TestCase):
         # same id and date >= today are deleted
 
         newPlannedTodo["gapWeek"] = 2
-        print(
-            self._Put(
-                f"{TODO_BASE_ROUTE}{UPDATE_PLANNED_TODO_ROUTE.format(id=newPlannedTodo['id'])}",
-                newPlannedTodo,
-            ).json()
-        )
+        # print(
+        self._Put(
+            f"{TODO_BASE_ROUTE}{UPDATE_PLANNED_TODO_ROUTE.format(id=newPlannedTodo['id'])}",
+            newPlannedTodo,
+        ).json()
+        # )
 
         nextWeek = today + timedelta(days=7)
 
@@ -546,3 +547,123 @@ class TodoTest(unittest.TestCase):
         )
 
         self._AssertNotContainsByTitle(response.json(), newPlannedTodo["title"])
+
+        # todo order with the planned todo is earlier than the user created todo
+        test_id = self._Post(
+            f"{TODO_BASE_ROUTE}{ADD_TODO_ROUTE}",
+            {
+                "id": 0,
+                "title": "test",
+                "description": "test",
+                "date": f"{today}",
+                "complete": True,
+            },
+        ).json()["id"]
+
+        response = self._Get(
+            f"{TODO_BASE_ROUTE}{GET_TODOS_ORDER_ROUTE_BY_DATE.format(date=today)}",
+        )
+
+        self.assertEqual(response.status_code, HTTP_OK_200)
+        todoIds = response.json()["orders"]
+
+        if len(todoIds) > 0:
+            response = self._Get(
+                f"{TODO_BASE_ROUTE}{GET_TODO_INFO_ROUTE.format(id=todoIds[-1])}",
+            )
+
+        self.assertEqual(response.json()["id"], test_id)
+
+        # get todo order with other user
+        response = self._Get(
+            f"{TODO_BASE_ROUTE}{GET_TODOS_ORDER_ROUTE_BY_DATE.format(date=today)}",
+            self.token2,
+        )
+
+        if len(response.json()["orders"]) > 0:
+            self.assertNotEqual(response.json()["orders"][-1], test_id)
+
+        # update todo order with other user
+        temp = todoIds[0]
+        newIds = todoIds.copy()
+        newIds[0] = newIds[-1]
+        newIds[-1] = temp
+
+        self._Put(
+            f"{TODO_BASE_ROUTE}{UPDATE_TODOS_ORDER_ROUTE.format(date=today)}",
+            {"orders": newIds},
+            self.token2,
+        )
+
+        response = self._Get(
+            f"{TODO_BASE_ROUTE}{GET_TODOS_ORDER_ROUTE_BY_DATE.format(date=today)}",
+        )
+
+        print(response.json())
+        self.assertEqual(response.json()["orders"], todoIds)
+
+        # update todo order
+        response = self._Put(
+            f"{TODO_BASE_ROUTE}{UPDATE_TODOS_ORDER_ROUTE.format(date=today)}",
+            {"orders": newIds},
+        )
+
+        self.assertEqual(response.status_code, HTTP_OK_200)
+        self.assertEqual(response.json()["orders"], newIds)
+
+        # delete all todos by date with wrong people
+        self._Delete(
+            f"{TODO_BASE_ROUTE}{CLEAN_TODOS_BY_DATE_ROUTE.format(date=today)}",
+            self.token2,
+        )
+
+        self.assertNotEqual(
+            self._Get(
+                f"{TODO_BASE_ROUTE}{GET_TODOS_BY_DATE_ROUTE.format(date=today)}",
+            ).json(),
+            [],
+        )
+
+        # delete all todos by date
+        self._Post(
+            f"{TODO_BASE_ROUTE}{ADD_TODO_ROUTE}",
+            {
+                "id": 0,
+                "title": "test",
+                "description": "test",
+                "date": f"{today}",
+                "complete": True,
+            },
+        )
+
+        response = self._Delete(
+            f"{TODO_BASE_ROUTE}{CLEAN_TODOS_BY_DATE_ROUTE.format(date=today)}"
+        )
+
+        self.assertEqual(response.status_code, HTTP_OK_200)
+        self.assertEqual(response.json(), {})
+
+        response = self._Get(
+            f"{TODO_BASE_ROUTE}{GET_TODOS_BY_DATE_ROUTE.format(date=today)}"
+        )
+
+        self.assertEqual(response.json(), [])
+
+        # when the planned todo is deleted, then it will not be created again
+        test_id = self._Post(
+            f"{TODO_BASE_ROUTE}{ADD_TODO_ROUTE}",
+            {
+                "id": 0,
+                "title": "test",
+                "description": "test",
+                "date": f"{today}",
+                "complete": True,
+            },
+        ).json()["id"]
+
+        response = self._Get(
+            f"{TODO_BASE_ROUTE}{GET_TODOS_BY_DATE_ROUTE.format(date=today)}",
+        )
+
+        self.assertEqual(response.json()[0]["id"], test_id)
+        self.assertEqual(len(response.json()), 1)

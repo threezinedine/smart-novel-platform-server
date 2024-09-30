@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import List, Optional
 from utils.database.database import Base
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Date, DateTime
 from sqlalchemy.orm import relationship
@@ -7,6 +7,8 @@ from apis.v1.todos.todo_schema import TodoSchema
 from apis.v1.todos.planned_todo_schema import PlannedTodoSchema
 
 from utils.date.date_utils import *
+
+from .user_model import User
 
 
 class PlannedTodo(Base):
@@ -157,3 +159,25 @@ class Todo(Base):
 
     def __repr__(self):
         return f"<Todo {self.title} due={self.date} />"
+
+
+class TodoOrder(Base):
+    __tablename__ = "todo_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    date = Column(Date, default=datetime.datetime.now)
+    order = Column(String(1000), nullable=False)
+
+    user = relationship("User", back_populates="todo_orders", uselist=False)
+
+    @staticmethod
+    def Create(user: User, date: datetime.date, order: List[int]) -> "TodoOrder":
+        orderStr = ",".join([str(id) for id in order])
+        return TodoOrder(date=date, order=orderStr, user=user)
+
+    def Update(self, order: List[int]):
+        self.order = ",".join([str(id) for id in order])
+
+    def __repr__(self):
+        return f"<TodoOrder {self.date} order={self.order} />"

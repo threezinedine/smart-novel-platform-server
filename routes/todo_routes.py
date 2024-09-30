@@ -23,4 +23,9 @@ UPDATE_PLANNED_TODO_ROUTE = "/planned/{id}"
 DELETE_PLANNED_TODO_ROUTE = "/planned/{id}"
 
 # clean remaining todos
-CLEAN_TODOS_ROUTE = "/clean"
+CLEAN_TODOS_BY_DATE_ROUTE = "/clean/{date}"
+
+# todo order routes
+GET_TODOS_ORDER_ROUTE_BY_DATE = "/order/{date}"  # return ids of todos in order
+
+UPDATE_TODOS_ORDER_ROUTE = "/order/{date}"  # param: order: [id1, id2, ...]

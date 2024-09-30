@@ -19,3 +19,4 @@ class User(Base):
     profile = relationship("Profile", back_populates="user", uselist=False)
     todos = relationship("Todo", back_populates="user")
     plannedTodos = relationship("PlannedTodo", back_populates="user", uselist=True)
+    todo_orders = relationship("TodoOrder", back_populates="user", uselist=True)
